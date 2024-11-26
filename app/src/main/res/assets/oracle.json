@@ -1,0 +1,13 @@
+{
+  "config_version": "1.0",
+  "ORACORE": {
+    "ora_dc_end_point_config": [
+      {
+        "ora_dc_collection_url": "https://dc.oracleinfinity.io/v3/",
+        "ora_dc_account_guid": "your_account_guid",
+        "ora_dc_retry_count": "2"
+      }
+    ],
+    "ora_dc_send_interval_millis": "10000"
+  }
+}
