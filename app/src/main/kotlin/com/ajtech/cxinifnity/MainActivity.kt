@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -16,10 +17,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ajtech.cxinifnity.event.Event
 import com.ajtech.cxinifnity.state.MainState
+import com.ajtech.cxinifnity.tracking.MainTrackingManager
 import com.ajtech.cxinifnity.ui.theme.CXInifnityTheme
 import com.ajtech.cxinifnity.usecase.GetDeviceIdUseCase
 
@@ -34,7 +35,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun inject() {
-        viewModel = MainViewModel(GetDeviceIdUseCase(this))
+        viewModel = MainViewModel(GetDeviceIdUseCase(this), MainTrackingManager())
         lifecycle.addObserver(viewModel)
     }
 
@@ -44,7 +45,7 @@ class MainActivity : ComponentActivity() {
             CXInifnityTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     DisplayDeviceId(innerPadding, state.value) {
-                        viewModel.onEvent(Event.OnViewDisplayed(it))
+                        viewModel.onEvent(it)
                     }
                 }
             }
@@ -53,7 +54,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun DisplayDeviceId(paddingValues: PaddingValues, state: MainState, trackView: (String) -> Unit) {
+fun DisplayDeviceId(paddingValues: PaddingValues, state: MainState, trackView: (Event) -> Unit) {
     when(state) {
         is MainState.Loading -> CircularProgressIndicator(
             modifier = Modifier.size(45.dp).padding(paddingValues)
@@ -66,7 +67,7 @@ fun DisplayDeviceId(paddingValues: PaddingValues, state: MainState, trackView: (
 }
 
 @Composable
-fun DeviceIdScreen(modifier: Modifier, state: MainState.HasDeviceId, trackView: (String) -> Unit = {}) {
+fun DeviceIdScreen(modifier: Modifier, state: MainState.HasDeviceId, trackView: (Event) -> Unit = {}) {
     Column(modifier = modifier) {
         Text(
             "Device ID: ${state.deviceId}",
@@ -77,7 +78,14 @@ fun DeviceIdScreen(modifier: Modifier, state: MainState.HasDeviceId, trackView: 
             "Source: ${state.source}",
             modifier = Modifier.padding(start = 12.dp, top = 12.dp)
         )
+
+        Button(
+            onClick = { trackView(Event.OnButtonClicked(state.deviceId, "MyButton")) },
+            modifier = Modifier.padding(start = 12.dp, top = 12.dp)
+        ) {
+            Text("Tracking button")
+        }
     }
 
-    SideEffect { trackView(state.deviceId) }
+    SideEffect { trackView(Event.OnViewDisplayed(state.deviceId)) }
 }

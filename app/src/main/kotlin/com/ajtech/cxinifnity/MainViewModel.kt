@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ajtech.cxinifnity.event.Event
 import com.ajtech.cxinifnity.state.MainState
+import com.ajtech.cxinifnity.tracking.MainTrackingManager
 import com.ajtech.cxinifnity.usecase.GetDeviceIdUseCase
 import com.oracle.cx.mobilesdk.ORABaseDataCollector
 import com.oracle.cx.mobilesdk.ORAEventMap
@@ -16,7 +17,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class MainViewModel(
-    private val deviceIdUseCase: GetDeviceIdUseCase
+    private val deviceIdUseCase: GetDeviceIdUseCase,
+    private val trackingManager: MainTrackingManager,
 ) : ViewModel(), DefaultLifecycleObserver {
     val state: StateFlow<MainState>
         field = MutableStateFlow<MainState>(MainState.Loading)
@@ -31,17 +33,14 @@ class MainViewModel(
     }
 
     fun onEvent(event: Event) {
+        trackingManager.onEvent(event)
         when(event) {
-            is Event.OnViewDisplayed -> onViewDisplayed(event)
+            is Event.OnViewDisplayed -> Unit
+            is Event.OnButtonClicked -> onButtonClicked(event)
         }
     }
 
-    private fun onViewDisplayed(event: Event.OnViewDisplayed) {
-        val customData = mapOf("device_id" to event.deviceId)
-
-        val oraEventMap = ORAEventMap("dcsuri", "oraTi", "oraPi", "oraSys", "oraDl", customData)
-
-        Log.d(MainViewModel::class.java.simpleName, "Triggering event: ${oraEventMap.eventMap}")
-        ORABaseDataCollector.getInstance().triggerEvent(oraEventMap)
+    private fun onButtonClicked(clicked: Event.OnButtonClicked) {
+        // Handle button clicked
     }
 }
